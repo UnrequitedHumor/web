@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {
-  Button,
+  Button, CircularProgress,
   Container,
   createMuiTheme,
   IconButton,
@@ -124,6 +124,11 @@ const useStyles = makeStyles((theme) => ({
   },
   nameInput: {
     flex: 1
+  },
+  loadingSpinner: {
+    display: "flex",
+    justifyContent: "center",
+    margin: theme.spacing(5, 0)
   }
 }));
 
@@ -139,7 +144,8 @@ function LoginPage(props) {
     showPassword: false,
     emailLoginError: "",
     googleSignInError: "",
-    loading: false
+    loading: false,
+    initialLoad: false
   });
 
   useEffect(() => {
@@ -200,8 +206,8 @@ function LoginPage(props) {
     onFailure: onGoogleLoginFailure
   });
 
-  if (!loaded) {
-    console.info("loading");
+  if (loaded && !values.initialLoad) {
+    setValues({...values, initialLoad: true});
   }
 
   const loginWithEmail = (e) => {
@@ -283,101 +289,111 @@ function LoginPage(props) {
                 </div>
               </div>
               {
-                isRegistering && (
-                  <div className={classes.nameInputs}>
-                    <TextField
-                      id="firstName"
-                      type="text"
-                      autoComplete="given-name"
-                      value={values.firstName}
-                      label="First Name"
-                      variant="outlined"
-                      onChange={handleChange("firstName")}
-                      fullWidth
-                      className={clsx(classes.loginInput, classes.nameInput)}
-                      error={values.emailLoginError !== ""}
-                      required
-                      InputLabelProps={{required: false}}
-                    />
-                    <TextField
-                      id="lastName"
-                      type="text"
-                      autoComplete="family-name"
-                      value={values.lastName}
-                      label="Last Name"
-                      variant="outlined"
-                      onChange={handleChange("lastName")}
-                      fullWidth
-                      className={clsx(classes.loginInput, classes.nameInput)}
-                      error={values.emailLoginError !== ""}
-                      required
-                      InputLabelProps={{required: false}}
-                    />
+                (!values.initialLoad || values.loading) ? (
+                  <div className={classes.loadingSpinner}>
+                    <CircularProgress color="secondary" />
                   </div>
+                ) : (
+                  <React.Fragment>
+                    {
+                      isRegistering && (
+                        <div className={classes.nameInputs}>
+                          <TextField
+                            id="firstName"
+                            type="text"
+                            autoComplete="given-name"
+                            value={values.firstName}
+                            label="First Name"
+                            variant="outlined"
+                            onChange={handleChange("firstName")}
+                            fullWidth
+                            className={clsx(classes.loginInput, classes.nameInput)}
+                            error={values.emailLoginError !== ""}
+                            required
+                            InputLabelProps={{required: false}}
+                          />
+                          <TextField
+                            id="lastName"
+                            type="text"
+                            autoComplete="family-name"
+                            value={values.lastName}
+                            label="Last Name"
+                            variant="outlined"
+                            onChange={handleChange("lastName")}
+                            fullWidth
+                            className={clsx(classes.loginInput, classes.nameInput)}
+                            error={values.emailLoginError !== ""}
+                            required
+                            InputLabelProps={{required: false}}
+                          />
+                        </div>
+                      )
+                    }
+                    <TextField
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      value={values.email}
+                      label="Email"
+                      variant="outlined"
+                      onChange={handleChange("email")}
+                      className={classes.loginInput}
+                      error={values.emailLoginError !== ""}
+                      required
+                      InputLabelProps={{required: false}}
+                    />
+                    <TextField
+                      id="password"
+                      type={values.showPassword ? "text" : "password"}
+                      value={values.password}
+                      onChange={handleChange("password")}
+                      autoComplete="current-password"
+                      variant="outlined"
+                      label="Password"
+                      className={classes.loginInput}
+                      error={values.emailLoginError !== ""}
+                      required
+                      InputLabelProps={{required: false}}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                            >
+                              {values.showPassword ? <Visibility/> : <VisibilityOff/>}
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      className={clsx(classes.loginButton, classes.mainLoginButton)}
+                      type="submit"
+                      disabled={values.loading}
+                      disableElevation
+                    >
+                      {isRegistering ? "Register" : "Login"}
+                    </Button>
+                    <DividerWithText>OR</DividerWithText>
+                    <Button
+                      variant="contained"
+                      className={clsx(classes.loginButton, classes.googleLoginButton)}
+                      onClick={signInWithGoogle}
+                      disabled={values.loading}
+                      disableElevation
+                    >
+                      <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.googleIcon}/>
+                      <span>Sign in with Google</span>
+                      <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.invisible}/>
+                    </Button>
+                  </React.Fragment>
                 )
               }
-              <TextField
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={values.email}
-                label="Email"
-                variant="outlined"
-                onChange={handleChange("email")}
-                className={classes.loginInput}
-                error={values.emailLoginError !== ""}
-                required
-                InputLabelProps={{required: false}}
-              />
-              <TextField
-                id="password"
-                type={values.showPassword ? "text" : "password"}
-                value={values.password}
-                onChange={handleChange("password")}
-                autoComplete="current-password"
-                variant="outlined"
-                label="Password"
-                className={classes.loginInput}
-                error={values.emailLoginError !== ""}
-                required
-                InputLabelProps={{required: false}}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {values.showPassword ? <Visibility/> : <VisibilityOff/>}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-              <Button
-                variant="contained"
-                color="secondary"
-                className={clsx(classes.loginButton, classes.mainLoginButton)}
-                type="submit"
-                disabled={values.loading}
-                disableElevation
-              >
-                {isRegistering ? "Register" : "Login"}
-              </Button>
-              <DividerWithText>OR</DividerWithText>
-              <Button
-                variant="contained"
-                className={clsx(classes.loginButton, classes.googleLoginButton)}
-                onClick={signInWithGoogle}
-                disabled={values.loading}
-                disableElevation
-              >
-                <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.googleIcon}/>
-                <span>Sign in with Google</span>
-                <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.invisible}/>
-              </Button>
             </form>
           </Paper>
           <Typography className={classes.registerText} color="textSecondary" variant="body1">
