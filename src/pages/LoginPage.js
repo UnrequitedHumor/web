@@ -2,11 +2,10 @@ import React, {useEffect} from 'react';
 import {
   Button, CircularProgress,
   Container,
-  createMuiTheme,
   IconButton,
   InputAdornment, Link,
   makeStyles,
-  MuiThemeProvider, Paper, SvgIcon, TextField,
+  Paper, SvgIcon, TextField,
   Typography
 } from '@material-ui/core';
 import {Visibility, VisibilityOff} from '@material-ui/icons';
@@ -14,18 +13,12 @@ import {useGoogleLogin} from 'react-google-login';
 import logo from './logo.svg';
 import {ReactComponent as GoogleLogo} from './google_logo.svg';
 import clsx from 'clsx';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useHistory} from 'react-router-dom';
 import {blue} from '@material-ui/core/colors';
 import DividerWithText from './ui/DividerWithText';
 import axios from "axios";
 
 const googleClientId = "453835501464-dho2cqor3l58bjqukplg64iviqjjajit.apps.googleusercontent.com";
-
-const theme = createMuiTheme({
-  typography: {
-    fontSize: 14
-  }
-})
 
 const useStyles = makeStyles((theme) => ({
   pageWrapper: {
@@ -133,9 +126,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function LoginPage(props) {
+  const classes = useStyles();
+  const history = useHistory();
+
   const isRegistering = props.register;
 
-  const classes = useStyles();
   const [values, setValues] = React.useState({
     email: "",
     firstName: "",
@@ -149,7 +144,16 @@ function LoginPage(props) {
   });
 
   useEffect(() => {
-    document.title = "Unrequited Humor | " + (isRegistering ? "Register" : "Login")
+    document.title = "Unrequited Humor | " + (isRegistering ? "Register" : "Login");
+
+    axios.get("/api/user").then((res) => {
+      let data = res.data;
+
+      if (data.loggedIn) {
+        console.info("Already signed in:", data);
+        history.push("/");
+      }
+    })
   });
 
   const handleChange = (prop) => (event) => {
@@ -165,11 +169,13 @@ function LoginPage(props) {
   };
 
   const finishLogin = (user) => {
-
+    setValues({...values, emailLoginError: "", googleSignInError: "", loading: false});
+    console.info("Logged in: ", user);
+    history.push("/");
   };
 
   const onGoogleLoginSuccess = (res) => {
-    axios.post("/google-login", {
+    axios.post("/api/google-login", {
       token: res.tokenId
     }).then((res) => {
       let data = res.data;
@@ -178,8 +184,7 @@ function LoginPage(props) {
         return;
       }
 
-      console.info("Login result: ", data);
-      setValues({...values, googleSignInError: "", loading: false});
+      finishLogin(data.user);
     }).catch((err) => {
       console.error("Login error: ", err);
       setValues({...values, googleSignInError: "An unexpected error occurred. Please try again", loading: false});
@@ -215,7 +220,7 @@ function LoginPage(props) {
 
     setValues({...values, emailLoginError: "", googleSignInError: "", loading: true});
 
-    axios.post("/login", {
+    axios.post("/api/login", {
         email: values.email,
         password: values.password
     }).then((res) => {
@@ -225,8 +230,7 @@ function LoginPage(props) {
         return;
       }
 
-      console.info("Login result: ", data);
-      setValues({...values, emailLoginError: "", googleSignInError: "", loading: false});
+      finishLogin(data.user);
     }).catch((err) => {
       console.error("Login error: ", err);
       setValues({...values, emailLoginError: "An unexpected error occurred. Please try again", loading: false});
@@ -238,7 +242,7 @@ function LoginPage(props) {
 
     setValues({...values, emailLoginError: "", googleSignInError: "", loading: true});
 
-    axios.post("/register", {
+    axios.post("/api/register", {
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
@@ -250,8 +254,7 @@ function LoginPage(props) {
         return;
       }
 
-      console.info("Registration result: ", data);
-      setValues({...values, emailLoginError: "", googleSignInError: "", loading: false});
+      finishLogin(data.user);
     }).catch((err) => {
       console.error("Registration error: ", err);
       setValues({...values, emailLoginError: "An unexpected error occurred. Please try again", loading: false});
@@ -266,147 +269,145 @@ function LoginPage(props) {
   let errorMessage = values.emailLoginError || values.googleSignInError;
 
   return (
-    <MuiThemeProvider theme={theme}>
-      <div className={classes.pageWrapper}>
-        <Container maxWidth="md" className={classes.pageContainer}>
-          <Paper elevation={3} className={classes.loginPaper}>
-            <form name="login" className={classes.loginForm} onSubmit={isRegistering ? registerWithEmail : loginWithEmail}>
-              <div className={classes.appHeader}>
-                <div className={classes.appLogoWrapper}>
-                  <img src={logo} className={classes.appLogo} alt="logo" />
-                </div>
-                <div className={classes.appHeaderText}>
-                  <Typography variant="h4" component="h1">Unrequited Humor</Typography>
-                  <Typography variant="subtitle1" color={errorMessage !== "" ? "error" : "initial"} paragraph>
-                    {errorMessage !== "" ? errorMessage : (isRegistering ? "Create a new account below to continue" : "Please login to continue")}
-                  </Typography>
-                </div>
+    <div className={classes.pageWrapper}>
+      <Container maxWidth="md" className={classes.pageContainer}>
+        <Paper elevation={3} className={classes.loginPaper}>
+          <form name="login" className={classes.loginForm} onSubmit={isRegistering ? registerWithEmail : loginWithEmail}>
+            <div className={classes.appHeader}>
+              <div className={classes.appLogoWrapper}>
+                <img src={logo} className={classes.appLogo} alt="logo" />
               </div>
-              {
-                (!values.initialLoad || values.loading) ? (
-                  <div className={classes.loadingSpinner}>
-                    <CircularProgress color="secondary" />
-                  </div>
-                ) : (
-                  <React.Fragment>
-                    {
-                      isRegistering && (
-                        <div className={classes.nameInputs}>
-                          <TextField
-                            id="firstName"
-                            type="text"
-                            autoComplete="given-name"
-                            value={values.firstName}
-                            label="First Name"
-                            variant="outlined"
-                            onChange={handleChange("firstName")}
-                            fullWidth
-                            className={clsx(classes.loginInput, classes.nameInput)}
-                            error={values.emailLoginError !== ""}
-                            required
-                            InputLabelProps={{required: false}}
-                          />
-                          <TextField
-                            id="lastName"
-                            type="text"
-                            autoComplete="family-name"
-                            value={values.lastName}
-                            label="Last Name"
-                            variant="outlined"
-                            onChange={handleChange("lastName")}
-                            fullWidth
-                            className={clsx(classes.loginInput, classes.nameInput)}
-                            error={values.emailLoginError !== ""}
-                            required
-                            InputLabelProps={{required: false}}
-                          />
-                        </div>
-                      )
-                    }
-                    <TextField
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      value={values.email}
-                      label="Email"
-                      variant="outlined"
-                      onChange={handleChange("email")}
-                      className={classes.loginInput}
-                      error={values.emailLoginError !== ""}
-                      required
-                      InputLabelProps={{required: false}}
-                    />
-                    <TextField
-                      id="password"
-                      type={values.showPassword ? "text" : "password"}
-                      value={values.password}
-                      onChange={handleChange("password")}
-                      autoComplete="current-password"
-                      variant="outlined"
-                      label="Password"
-                      className={classes.loginInput}
-                      error={values.emailLoginError !== ""}
-                      required
-                      InputLabelProps={{required: false}}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              aria-label="toggle password visibility"
-                              onClick={handleClickShowPassword}
-                              onMouseDown={handleMouseDownPassword}
-                              edge="end"
-                            >
-                              {values.showPassword ? <Visibility/> : <VisibilityOff/>}
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      className={clsx(classes.loginButton, classes.mainLoginButton)}
-                      type="submit"
-                      disabled={values.loading}
-                      disableElevation
-                    >
-                      {isRegistering ? "Register" : "Login"}
-                    </Button>
-                    <DividerWithText>OR</DividerWithText>
-                    <Button
-                      variant="contained"
-                      className={clsx(classes.loginButton, classes.googleLoginButton)}
-                      onClick={signInWithGoogle}
-                      disabled={values.loading}
-                      disableElevation
-                    >
-                      <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.googleIcon}/>
-                      <span>Sign in with Google</span>
-                      <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.invisible}/>
-                    </Button>
-                  </React.Fragment>
-                )
-              }
-            </form>
-          </Paper>
-          <Typography className={classes.registerText} color="textSecondary" variant="body1">
+              <div className={classes.appHeaderText}>
+                <Typography variant="h4" component="h1">Unrequited Humor</Typography>
+                <Typography variant="subtitle1" color={errorMessage !== "" ? "error" : "initial"} paragraph>
+                  {errorMessage !== "" ? errorMessage : (isRegistering ? "Create a new account below to continue" : "Please login to continue")}
+                </Typography>
+              </div>
+            </div>
             {
-              isRegistering ? (
-                <React.Fragment>
-                  Already have an account? <Link component={RouterLink} to="/login">Log in</Link>
-                </React.Fragment>
+              (!values.initialLoad || values.loading) ? (
+                <div className={classes.loadingSpinner}>
+                  <CircularProgress color="secondary" />
+                </div>
               ) : (
                 <React.Fragment>
-                  Don't have an account? <Link component={RouterLink} to="/register">Register now</Link>
+                  {
+                    isRegistering && (
+                      <div className={classes.nameInputs}>
+                        <TextField
+                          id="firstName"
+                          type="text"
+                          autoComplete="given-name"
+                          value={values.firstName}
+                          label="First Name"
+                          variant="outlined"
+                          onChange={handleChange("firstName")}
+                          fullWidth
+                          className={clsx(classes.loginInput, classes.nameInput)}
+                          error={values.emailLoginError !== ""}
+                          required
+                          InputLabelProps={{required: false}}
+                        />
+                        <TextField
+                          id="lastName"
+                          type="text"
+                          autoComplete="family-name"
+                          value={values.lastName}
+                          label="Last Name"
+                          variant="outlined"
+                          onChange={handleChange("lastName")}
+                          fullWidth
+                          className={clsx(classes.loginInput, classes.nameInput)}
+                          error={values.emailLoginError !== ""}
+                          required
+                          InputLabelProps={{required: false}}
+                        />
+                      </div>
+                    )
+                  }
+                  <TextField
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    value={values.email}
+                    label="Email"
+                    variant="outlined"
+                    onChange={handleChange("email")}
+                    className={classes.loginInput}
+                    error={values.emailLoginError !== ""}
+                    required
+                    InputLabelProps={{required: false}}
+                  />
+                  <TextField
+                    id="password"
+                    type={values.showPassword ? "text" : "password"}
+                    value={values.password}
+                    onChange={handleChange("password")}
+                    autoComplete="current-password"
+                    variant="outlined"
+                    label="Password"
+                    className={classes.loginInput}
+                    error={values.emailLoginError !== ""}
+                    required
+                    InputLabelProps={{required: false}}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            edge="end"
+                          >
+                            {values.showPassword ? <Visibility/> : <VisibilityOff/>}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    className={clsx(classes.loginButton, classes.mainLoginButton)}
+                    type="submit"
+                    disabled={values.loading}
+                    disableElevation
+                  >
+                    {isRegistering ? "Register" : "Login"}
+                  </Button>
+                  <DividerWithText>OR</DividerWithText>
+                  <Button
+                    variant="contained"
+                    className={clsx(classes.loginButton, classes.googleLoginButton)}
+                    onClick={signInWithGoogle}
+                    disabled={values.loading}
+                    disableElevation
+                  >
+                    <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.googleIcon}/>
+                    <span>Sign in with Google</span>
+                    <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.invisible}/>
+                  </Button>
                 </React.Fragment>
               )
             }
+          </form>
+        </Paper>
+        <Typography className={classes.registerText} color="textSecondary" variant="body1">
+          {
+            isRegistering ? (
+              <React.Fragment>
+                Already have an account? <Link component={RouterLink} color="secondary" to="/login">Log in</Link>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                Don't have an account? <Link component={RouterLink} color="secondary" to="/register">Register now</Link>
+              </React.Fragment>
+            )
+          }
 
-          </Typography>
-        </Container>
-      </div>
-    </MuiThemeProvider>
+        </Typography>
+      </Container>
+    </div>
   );
 }
 
