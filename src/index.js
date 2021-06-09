@@ -8,18 +8,17 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-import RegisterPage from "./pages/RegisterPage";
 
 ReactDOM.render(
   <React.StrictMode>
     <CssBaseline />
     <Router>
       <Switch>
-        <Route path="/login">
+        <Route key="login" path="/login">
           <LoginPage />
         </Route>
-        <Route path="/register">
-          <RegisterPage />
+        <Route key="register" path="/register">
+          <LoginPage register={true} />
         </Route>
       </Switch>
     </Router>
