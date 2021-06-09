@@ -1,0 +1,13 @@
+<svg viewBox="14 14 18 18" xmlns="http://www.w3.org/2000/svg">
+    <g sketchtype="MSPage" fill="none">
+        <g sketchtype="MSArtboardGroup">
+            <g sketchtype="MSLayerGroup">
+                <path d="M31.6 23.2C31.6 22.6 31.6 22 31.5 21.4L23 21.4 23 24.8 27.8 24.8C27.6 26 27 26.9 26 27.6L26 29.8 29 29.8C30.7 28.3 31.6 25.9 31.6 23.2L31.6 23.2Z" sketchtype="MSShapeGroup" fill="#4285F4"/>
+                <path d="M23 32C25.4 32 27.5 31.2 29 29.8L26 27.6C25.2 28.1 24.2 28.4 23 28.4 20.7 28.4 18.7 26.8 18 24.7L15 24.7 15 27C16.4 30 19.5 32 23 32L23 32Z" sketchtype="MSShapeGroup" fill="#34A853"/>
+                <path d="M18 24.7C17.8 24.2 17.7 23.6 17.7 23 17.7 22.4 17.8 21.8 18 21.3L18 19 15 19C14.3 20.2 14 21.5 14 23 14 24.5 14.3 25.8 15 27L18 24.7 18 24.7Z" sketchtype="MSShapeGroup" fill="#FBBC05"/>
+                <path d="M23 17.6C24.3 17.6 25.5 18 26.4 18.9L29 16.3C27.5 14.9 25.4 14 23 14 19.5 14 16.4 16 15 19L18 21.3C18.7 19.2 20.7 17.6 23 17.6L23 17.6Z" sketchtype="MSShapeGroup" fill="#EA4335"/>
+                <path d="M14 14L32 14 32 32 14 32 14 14Z" sketchtype="MSShapeGroup"/>
+            </g>
+        </g>
+    </g>
+</svg>
