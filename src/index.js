@@ -8,6 +8,7 @@ import {
   Switch,
   Route
 } from "react-router-dom";
+import MainPage from "./pages/MainPage";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -19,6 +20,9 @@ ReactDOM.render(
         </Route>
         <Route key="register" path="/register">
           <LoginPage register={true} />
+        </Route>
+        <Route key="main" path="/">
+          <MainPage />
         </Route>
       </Switch>
     </Router>

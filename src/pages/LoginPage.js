@@ -17,9 +17,9 @@ import clsx from 'clsx';
 import {Link as RouterLink} from 'react-router-dom';
 import {blue} from '@material-ui/core/colors';
 import DividerWithText from './ui/DividerWithText';
+import axios from "axios";
 
 const googleClientId = "453835501464-dho2cqor3l58bjqukplg64iviqjjajit.apps.googleusercontent.com";
-const apiEndpoint = "http://localhost:3001";
 
 const theme = createMuiTheme({
   typography: {
@@ -164,21 +164,22 @@ function LoginPage(props) {
     event.preventDefault();
   };
 
+  const finishLogin = (user) => {
+
+  };
+
   const onGoogleLoginSuccess = (res) => {
-    fetch(apiEndpoint + "/google-login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        token: res.tokenId
-      })
-    }).then(res => res.json()).then((data) => {
+    axios.post("/google-login", {
+      token: res.tokenId
+    }).then((res) => {
+      let data = res.data;
       if (data.error) {
         setValues({...values, googleSignInError: data.error, loading: false});
         return;
       }
 
       console.info("Login result: ", data);
-      setValues({...values, loading: false});
+      setValues({...values, googleSignInError: "", loading: false});
     }).catch((err) => {
       console.error("Login error: ", err);
       setValues({...values, googleSignInError: "An unexpected error occurred. Please try again", loading: false});
@@ -200,7 +201,6 @@ function LoginPage(props) {
 
   const {signIn, loaded} = useGoogleLogin({
     clientId: googleClientId,
-    isSignedIn: true,
     cookiePolicy: "single_host_origin",
     onSuccess: onGoogleLoginSuccess,
     onFailure: onGoogleLoginFailure
@@ -215,14 +215,11 @@ function LoginPage(props) {
 
     setValues({...values, emailLoginError: "", googleSignInError: "", loading: true});
 
-    fetch(apiEndpoint + "/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
+    axios.post("/login", {
         email: values.email,
         password: values.password
-      })
-    }).then(res => res.json()).then((data) => {
+    }).then((res) => {
+      let data = res.data;
       if (data.error) {
         setValues({...values, emailLoginError: data.error, loading: false});
         return;
@@ -241,16 +238,13 @@ function LoginPage(props) {
 
     setValues({...values, emailLoginError: "", googleSignInError: "", loading: true});
 
-    fetch(apiEndpoint + "/register", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
-        password: values.password
-      })
-    }).then(res => res.json()).then((data) => {
+    axios.post("/register", {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      password: values.password
+    }).then((res) => {
+      let data = res.data;
       if (data.error) {
         setValues({...values, emailLoginError: data.error, loading: false});
         return;
@@ -284,7 +278,7 @@ function LoginPage(props) {
                 <div className={classes.appHeaderText}>
                   <Typography variant="h4" component="h1">Unrequited Humor</Typography>
                   <Typography variant="subtitle1" color={errorMessage !== "" ? "error" : "initial"} paragraph>
-                    {errorMessage === "" ? "Are you really joking in a time like this?" : errorMessage}
+                    {errorMessage !== "" ? errorMessage : (isRegistering ? "Create a new account below to continue" : "Please login to continue")}
                   </Typography>
                 </div>
               </div>
