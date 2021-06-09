@@ -2,9 +2,9 @@ import React from 'react';
 import {
   Button,
   Container,
-  createMuiTheme, Divider,
+  createMuiTheme,
   IconButton,
-  InputAdornment,
+  InputAdornment, Link,
   makeStyles,
   MuiThemeProvider, Paper, SvgIcon, TextField,
   Typography
@@ -13,7 +13,7 @@ import {Visibility, VisibilityOff} from '@material-ui/icons';
 import {useGoogleLogin} from 'react-google-login';
 import {ReactComponent as GoogleLogo} from './google_logo.svg';
 import clsx from "clsx";
-import {Link} from "react-router-dom";
+import {Link as RouterLink} from "react-router-dom";
 import {blue} from "@material-ui/core/colors";
 import DividerWithText from "./ui/DividerWithText";
 
@@ -27,7 +27,7 @@ const theme = createMuiTheme({
 
 const useStyles = makeStyles((theme) => ({
   pageWrapper: {
-    height: "100vh",
+    minHeight: "100vh",
     display: "flex",
     flexDirection: "columnn"
   },
@@ -37,6 +37,9 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     flexGrow: "1"
+  },
+  loginPaper: {
+    marginTop: theme.spacing(3)
   },
   loginForm: {
     display: "flex",
@@ -55,13 +58,25 @@ const useStyles = makeStyles((theme) => ({
   },
   googleLoginButton: {
     justifyContent: "space-between",
-    padding: theme.spacing(1, 1.5)
+    padding: theme.spacing(1, 1.5),
+    [theme.breakpoints.down("sm")]: {
+      justifyContent: "center",
+      padding: theme.spacing(1),
+    }
+  },
+  googleIcon: {
+    [theme.breakpoints.down("sm")]: {
+      marginRight: theme.spacing(2)
+    }
   },
   invisible: {
-    opacity: 0
+    opacity: 0,
+    [theme.breakpoints.down("sm")]: {
+      display: "none"
+    }
   },
   registerText: {
-    paddingTop: theme.spacing(2)
+    margin: theme.spacing(2, 0)
   },
   registerLink: {
     textDecoration: "none",
@@ -110,7 +125,7 @@ function LoginPage() {
     <MuiThemeProvider theme={theme}>
       <div className={classes.pageWrapper}>
         <Container maxWidth="md" className={classes.pageContainer}>
-          <Paper elevation={3}>
+          <Paper elevation={3} className={classes.loginPaper}>
             <form name="login" method="post" className={classes.loginForm}>
               <Typography variant="h3" component="h1">Unrequited Humor</Typography>
               <Typography variant="subtitle1" paragraph>Are you really joking in a time like this?</Typography>
@@ -153,14 +168,15 @@ function LoginPage() {
               <Button variant="contained" color="primary" className={clsx(classes.loginButton, classes.mainLoginButton)}>Login</Button>
               <DividerWithText>OR</DividerWithText>
               <Button variant="contained" className={clsx(classes.loginButton, classes.googleLoginButton)} onClick={signIn}>
-                <SvgIcon component={GoogleLogo} viewBox="14 14 18 18"/>
+                <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.googleIcon}/>
                 <span>Sign in with Google</span>
                 <SvgIcon component={GoogleLogo} viewBox="14 14 18 18" className={classes.invisible}/>
               </Button>
             </form>
           </Paper>
-          <Typography className={classes.registerText} color="textSecondary" variant="body1">Don't have an account? <Link to="/register" className={classes.registerLink}>Register
-            now</Link></Typography>
+          <Typography className={classes.registerText} color="textSecondary" variant="body1">
+            Don't have an account? <Link component={RouterLink} to="/register">Register now</Link>
+          </Typography>
         </Container>
       </div>
     </MuiThemeProvider>
