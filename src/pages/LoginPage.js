@@ -367,7 +367,7 @@ function LoginPage(props) {
                   />
                   <Button
                     variant="contained"
-                    color="secondary"
+                    color="primary"
                     className={clsx(classes.loginButton, classes.mainLoginButton)}
                     type="submit"
                     disabled={values.loading}

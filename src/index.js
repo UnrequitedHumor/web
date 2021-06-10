@@ -8,10 +8,12 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-import MainPage from "./pages/MainPage";
+import UserContentWrapper from "./pages/UserContentWrapper";
 import {createMuiTheme, MuiThemeProvider} from "@material-ui/core";
-import {blueGrey, green} from "@material-ui/core/colors";
+import {green, purple} from "@material-ui/core/colors";
 import LogoutPage from "./pages/LogoutPage";
+import MainPage from "./pages/MainPage";
+import CreatePackPage from "./pages/CreatePackPage";
 
 const theme = createMuiTheme({
   typography: {
@@ -19,10 +21,10 @@ const theme = createMuiTheme({
   },
   palette: {
     primary: {
-      main: blueGrey[300]
+      main: green[600]
     },
     secondary: {
-      main: green[600]
+      main: purple[300]
     }
   }
 })
@@ -42,8 +44,11 @@ ReactDOM.render(
           <Route key="logout" path="/logout">
             <LogoutPage />
           </Route>
+          <Route key="create-game" path="/create-pack">
+            <UserContentWrapper content={<CreatePackPage />} />
+          </Route>
           <Route key="main" path="/">
-            <MainPage />
+            <UserContentWrapper content={<MainPage />} />
           </Route>
         </Switch>
       </Router>
