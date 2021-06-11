@@ -170,7 +170,7 @@ function LoginPage(props) {
 
   const finishLogin = (user) => {
     setValues({...values, emailLoginError: "", googleSignInError: "", loading: false});
-    console.info("Logged in: ", user);
+    console.info("Logged in, pushing path ", user);
     history.push("/");
   };
 

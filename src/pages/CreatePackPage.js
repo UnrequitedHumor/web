@@ -1,14 +1,15 @@
 import React from "react";
 import {
   Button,
-  Card, CardActions, CardContent,
-  IconButton,
-  makeStyles, Paper, Step, StepLabel, Stepper, TextField,
+  Card, CardActions, CardContent, FormControl,
+  IconButton, InputLabel,
+  makeStyles, MenuItem, Paper, Select, Step, StepLabel, Stepper, TextField,
   Typography
 } from "@material-ui/core";
 import {ArrowBack} from "@material-ui/icons";
 import {useHistory} from "react-router-dom";
 import ChipInput from "material-ui-chip-input";
+import EditableCard from "./ui/EditableCard";
 
 const STEPS = ["Choose a game", "Configure your pack", "Add cards"];
 
@@ -90,15 +91,29 @@ const useStyles = makeStyles((theme) => ({
   },
   configHeading: {
     fontWeight: "bold",
+    margin: theme.spacing(1, 0)
   },
   configInput: {
-    margin:theme.spacing(1, 0)
+    margin: theme.spacing(1, 0)
   },
   configButtons: {
     margin: theme.spacing(1, 0),
     display: "flex",
     gap: theme.spacing(1)
   },
+  cardsGrid: {
+    margin: theme.spacing(2, 0),
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(2)
+  },
+  cardsFlex: {
+    display: "flex",
+    gap: theme.spacing(2),
+    [theme.breakpoints.down("xs")]: {
+      flexDirection: "column"
+    }
+  }
 }));
 
 function CreatePackPage() {
@@ -109,11 +124,12 @@ function CreatePackPage() {
   const [selectedGame, setSelectedGame] = React.useState(null);
 
   const [packName, setPackName] = React.useState("");
-  const [tags, setTags] = React.useState([]);
+  const [packTags, setPackTags] = React.useState([]);
+  const [packVisibility, setPackVisibility] = React.useState("public");
 
   const selectGame = (gameNo) => () => {
     setSelectedGame(gameNo);
-    setTags([GAMES[gameNo].name]);
+    setPackTags([GAMES[gameNo].name]);
     setCurStep(1);
   }
 
@@ -162,21 +178,39 @@ function CreatePackPage() {
                 variant="outlined"
                 className={classes.configInput}
                 color="secondary"
+                value={packName}
                 onChange={(e) => setPackName(e.target.value)}
+                InputLabelProps={{required: false}}
                 fullWidth
+                required
               />
               <ChipInput
                 label="Tags"
                 variant="outlined"
-                defaultValue={[GAMES[selectedGame].name]}
+                defaultValue={packTags}
                 className={classes.configInput}
                 color="secondary"
                 InputProps={{
                   label: "Tags"
                 }}
-                onChange={(tags) => setTags(tags)}
+                onChange={(tags) => setPackTags(tags)}
                 fullWidth
               />
+              <FormControl className={classes.configInput} variant="outlined" fullWidth>
+                <InputLabel id="pack-visibility-select-label">Visibility</InputLabel>
+                <Select
+                  labelId="pack-visibility-select-label"
+                  value={packVisibility}
+                  onChange={(e) => setPackVisibility(e.target.value)}
+                  label="Visibility"
+                  color="secondary"
+                  required
+                >
+                  <MenuItem value="public">Public (Anyone can use)</MenuItem>
+                  <MenuItem value="unlisted">Unlisted (Anyone with the link can use)</MenuItem>
+                  <MenuItem value="private">Private (Only you can use)</MenuItem>
+                </Select>
+              </FormControl>
               <div className={classes.configButtons}>
                 <Button onClick={() => setCurStep(0)}>Back</Button>
                 <Button
@@ -194,9 +228,31 @@ function CreatePackPage() {
         {
           curStep === 2 && (
             <React.Fragment>
+              <Typography className={classes.configHeading}>Pack Information</Typography>
               <div className={classes.gameInfo}>
+                <Typography>Game: {GAMES[selectedGame].name}</Typography>
                 <Typography>Pack name: {packName}</Typography>
-                <Typography>Tags: {tags.join(", ")}</Typography>
+                <Typography>Tags: {packTags.join(", ")}</Typography>
+                <Typography>Visibility: {packVisibility}</Typography>
+              </div>
+              <Typography className={classes.configHeading}>White Cards</Typography>
+              <div className={classes.cardsGrid}>
+                <div className={classes.cardsFlex}>
+                  <EditableCard value="Your father." />
+                  <EditableCard value="The end of times." />
+                </div>
+                <div className={classes.cardsFlex}>
+                  <EditableCard value="Your father." />
+                  <EditableCard value="The end of times." />
+                </div>
+                <div className={classes.cardsFlex}>
+                  <EditableCard value="Your father." />
+                  <EditableCard value="The end of times." />
+                </div>
+                <div className={classes.cardsFlex}>
+                  <EditableCard value="Your father." />
+                  <EditableCard value="The end of times." />
+                </div>
               </div>
               <div className={classes.configButtons}>
                 <Button onClick={() => setCurStep(1)}>Back</Button>

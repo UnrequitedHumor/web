@@ -27,7 +27,7 @@ const theme = createMuiTheme({
       main: purple[300]
     }
   }
-})
+});
 
 ReactDOM.render(
   <React.StrictMode>
